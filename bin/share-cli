@@ -1,0 +1,14 @@
+#!/usr/bin/env node
+
+const program = require('commander')
+
+const init  = require('../src/command/init')
+
+const { version } = require('../package') 
+
+program.version(version)
+
+program.command('init <project>')
+	.alias('i')
+	.action(init)
+program.parse(process.argv);
