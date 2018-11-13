@@ -1,5 +1,8 @@
 const fs = require('fs');
-
+const path = require('path')
+const util = require('util')
+const child_process = require('child_process')
+const spawn = util.promisify(child_process.spawn)
 const download = require('download-git-repo');
 const handlebars = require('handlebars');
 const inquirer = require('inquirer');
@@ -22,9 +25,9 @@ module.exports = (name)=>{
 					message: '请输入作者名称'
 				}
             ]).then((answers) => {
-                const spinner = ora('正在下载模板...');
+                const spinner = ora({text:'正在下载模板...',color:'green'});
                 spinner.start();
-				download('antgod/any-cli', name, {clone: false}, (err) => {
+				download('sunjp123/share', name, {clone: false}, async (err) => {
                     if(err){
                         spinner.fail();
                         console.log(symbols.error, chalk.red(err));
@@ -39,12 +42,23 @@ module.exports = (name)=>{
                         if(fs.existsSync(fileName)){
                             const content = fs.readFileSync(fileName).toString();
                             const result = handlebars.compile(content)(meta);
-							console.log(result);
                             fs.writeFileSync(fileName, result);
                         }else{
-							console.log(symbols.error, chalk.green('改写package 不存在'));
-						}
-                        console.log(symbols.success, chalk.green('项目初始化完成1111111111111111111'));
+							console.log(symbols.error, chalk.red('改写package 不存在'));
+                        }
+                        const spinnerNpm = ora({text:'正在初始化依赖...',color:'green'});
+                        spinnerNpm.start();
+                        spawn('npm.cmd',['install'],{cwd:name},async (err,stdout,stderr)=>{
+                            if(err){
+                                spinnerNpm.fail();
+                                console.log(symbols.error, chalk.red(err));
+                            }
+                            console.log(symbols.success, chalk.green('初始化依赖完成'));
+                            spinnerNpm.succeed();
+                            console.log(symbols.success, chalk.green('项目初始化完成')); 
+                        })
+                        		
+						                       
                     }
                 })
             })
